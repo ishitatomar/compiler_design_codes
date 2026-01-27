@@ -3,7 +3,6 @@
 char ans[1000];
 int i=0;
 %}
-
 %%
 <<EOF>>				{ans[i++]='\0';
 					return 0;}
