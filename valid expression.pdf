@@ -1,0 +1,81 @@
+---p.l---
+%{
+#include "p.tab.h"
+%}
+
+%%
+[0-9]+          { yylval = atoi(yytext); return NUMBER; }
+[ \t]           ;   // ignore whitespace
+\n              { return '\n'; }
+
+"+"             { return '+'; }
+"-"             { return '-'; }
+"*"             { return '*'; }
+"/"             { return '/'; }
+"("             { return '('; }
+")"             { return ')'; }
+
+.               { printf("Invalid character: %s\n", yytext); }
+%%
+
+int yywrap() {
+    return 1;
+}
+
+
+---p.y---
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+void yyerror(const char *s);
+int yylex();
+%}
+
+%token NUMBER
+
+%left '+' '-'
+%left '*' '/'
+
+%%
+input:
+      | input line
+      ;
+
+line:
+      expr '\n'   { printf("Valid Expression\n"); }
+    ;
+
+expr:
+      expr '+' expr
+    | expr '-' expr
+    | expr '*' expr
+    | expr '/' expr
+    | '(' expr ')'
+    | NUMBER
+    ;
+%%
+
+void yyerror(const char *s) {
+    printf("Invalid Expression\n");
+}
+
+int main() {
+    printf("Enter expression:\n");
+    yyparse();
+    return 0;
+}
+
+
+---output---
+ishitatomar@ISHITAs-MacBook-Air Desktop % flex p.l
+ishitatomar@ISHITAs-MacBook-Air Desktop % bison -d p.y
+ishitatomar@ISHITAs-MacBook-Air Desktop % gcc lex.yy.c p.tab.c -o output
+ishitatomar@ISHITAs-MacBook-Air Desktop % ./output
+Enter expression:
+3+5
+Valid Expression
+7 + 8 * (9 - 3)
+Valid Expression
+8//2
+Invalid Expression
